@@ -1,5 +1,14 @@
 from channels.consumer import SyncConsumer, AsyncConsumer
+from time import sleep
+import asyncio
+# Difference Between Sync an Async method
 
+'''
+1] SyncConsumer - In Sync method does not handel multiple request at a time 
+                - It will run one by one.
+2] AsyncConsumer - In Async method can handel multiple request at a time
+                 - It will run side by side.
+'''
 
 # Syncconsumer
 class MySyncConsumer(SyncConsumer):
@@ -12,18 +21,30 @@ class MySyncConsumer(SyncConsumer):
         
     def websocket_receive(self,event):
         print('Webscocket receive',event['text'])
-        self.send({
-            "type": event
-        })
+        for i in range(10):
+            self.send({
+                "type": "websocket.send",
+                'text': f'Massage From Server {i}'
+            })
+            sleep(1)
     def websocket_disconnect(self,event):
         print('Webscocket disconnect',event)
 
 
 # Syncconsumer
 class MyASyncConsumer(AsyncConsumer):
-    async def webscocket_connect(self,event):
+    async def websocket_connect(self,event):
         print('Webscocket connect')
-    async def webscocket_receive(self,event):
+        await self.send({
+            "type": "websocket.accept",
+        })
+    async def websocket_receive(self,event):
         print('Webscocket receive')
-    async def webscocket_disconnect(self,event):
+        for i in range(10):
+            await self.send({
+                "type": "websocket.send",
+                'text': f'Massage From Server {i}'
+            })
+            await asyncio.sleep(1)
+    async def websocket_disconnect(self,event):
         print('Webscocket disconnect')
